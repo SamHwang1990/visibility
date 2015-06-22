@@ -1,0 +1,11 @@
+{
+  "name": "visibility",
+  "version": "0.0.1",
+  "description": "Wrapper for cross-browser Page Visibility API shim",
+  "main": "index.js",
+  "scripts": {
+  },
+  "keywords": ["page visibility api", "polyfill", "visibility"],
+  "author": "SamHwang1990 <samhwang1990@gmail.com>",
+  "license": "MIT"
+}
