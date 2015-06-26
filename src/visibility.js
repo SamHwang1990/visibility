@@ -17,7 +17,12 @@
 
   'use strict';
 
+  var fallback = function(){
+
+  };
+
   var _self = {
+    _id: 0,
     _doc: document || {},
     _callbacks: {},
 
@@ -47,7 +52,7 @@
       *
       * 最后，返回前缀
       * */
-      if(typeof _self._prefixCached === 'undefined'){
+      if(_self._prefixCached === null){
         for(; prefixItem = _self._prefixes[i++];){
           if((prefixItem + _self._propHidden) in _self._doc){
             _self._prefixCached = prefixItem;
@@ -88,16 +93,62 @@
       _propValue = _self._doc[_propWithPrefix];
 
       return _propValue;
+    },
+
+    _listen: function(){
+      var changeEvent, listenFunc;
+
+      if(self.init){
+        return;
+      }
+
+      changeEvent = _self._getPropName(_self._propEvent);
+      listenFunc  = function(){
+        _self._executeChange.apply(_self, arguments);
+      };
+
+      if(_self._doc.addEventListener){
+        _self._doc.addEventListener(changeEvent, listenFunc);
+      }else{
+        _self._doc.attachEvent(changeEvent, listenFunc);
+      }
+
+      self.init = true;
+    },
+
+    _executeChange: function(event){
+      var state = self.state();
+
+      for(var id in _self._callbacks){
+        (typeof _self._callbacks[id] === 'function') && _self._callbacks[id].call(_self._doc, state, event);
+      }
     }
   };
 
   var self = {
-    state: null,
-    isSupport: function(){
-
+    state: function () {
+      return _self._getState() || 'visible';
     },
-    onceVisible: function(){
+    isSupport: function(){
+      return !! _self._getState();
+    },
+    onceVisible: function(callback){
+      var isSupport = self.isSupport(),
+        cbId;
 
+      if(!isSupport || _self._getHidden()){
+        (typeof callback === 'function') && (callback());
+        return isSupport;
+      }
+
+      cbId = self.onChange(function(state){
+        if(!_self._getHidden()){
+          self.unbind(cbId);
+          (typeof callback === 'function') && (callback());
+        }
+      });
+
+      return cbId;
     },
     onVisible: function(){
 
@@ -105,14 +156,22 @@
     onHidden: function(){
 
     },
-    onStateChange: function(event){
+    onChange: function(callback){
+      var cbId;
 
+      if(!self.isSupport()) return false;
+
+      cbId = _self._id++;
+      _self._callbacks[cbId] = callback;
+      _self._listen();
+
+      return cbId;
     },
     afterPrerender: function(){
 
     },
     unbind: function(id){
-
+      return delete _self._callbacks[id];
     }
   };
 
