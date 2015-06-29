@@ -18,6 +18,46 @@
   'use strict';
 
   var fallback = function(){
+    var onFocus, onBlur, fireEvent, stateChangeEvent;
+    var _doc        = document,
+        _hiddenProp = _self._getPropName(_self._propHidden),
+        _stateProp  = _self._getPropName(_self._propState);
+
+    if(self.isSupport()){
+      return false;
+    }
+
+    _doc[_hiddenProp] = false;
+    _doc[_stateProp]  = 'visible';
+
+    fireEvent = function(){
+      if(_doc.createEvent){
+
+      }else{
+
+      }
+    };
+
+    onFocus = function(){
+      _doc[_hiddenProp] = false;
+      _doc[_stateProp]  = 'visible';
+      fireEvent();
+    };
+
+    onBlur = function(){
+      _doc[_hiddenProp] = true;
+      _doc[_stateProp]  = 'hidden';
+      fireEvent();
+    };
+
+    if(_doc.addEventListener){
+      _doc.addEventListener('focus', onFocus, true);
+      _doc.addEventListener('blur', onBlur, true);
+    }else{
+      _doc.attachEvent('onfocusin', onFocus);
+      _doc.attachEvent('onfocusout', onBlur);
+    }
+
 
   };
 
@@ -52,7 +92,7 @@
       *
       * 最后，返回前缀
       * */
-      if(_self._prefixCached === null){
+      if(_self._prefixCached == null){
         for(; prefixItem = _self._prefixes[i++];){
           if((prefixItem + _self._propHidden) in _self._doc){
             _self._prefixCached = prefixItem;
@@ -96,21 +136,20 @@
     },
 
     _listen: function(){
-      var changeEvent, listenFunc;
+      var listenFunc;
 
       if(self.init){
         return;
       }
 
-      changeEvent = _self._getPropName(_self._propEvent);
       listenFunc  = function(){
         _self._executeChange.apply(_self, arguments);
       };
 
       if(_self._doc.addEventListener){
-        _self._doc.addEventListener(changeEvent, listenFunc);
+        _self._doc.addEventListener(_self._propEvent, listenFunc);
       }else{
-        _self._doc.attachEvent(changeEvent, listenFunc);
+        _self._doc.attachEvent(_self._propEvent, listenFunc);
       }
 
       self.init = true;
@@ -133,12 +172,15 @@
       return !! _self._getState();
     },
     onceVisible: function(callback){
-      var isSupport = self.isSupport(),
-        cbId;
+      var cbId;
 
-      if(!isSupport || _self._getHidden()){
+      if(!self.isSupport()){
+        return false;
+      }
+
+      if(!_self._getHidden()){
         (typeof callback === 'function') && (callback());
-        return isSupport;
+        return true;
       }
 
       cbId = self.onChange(function(state){
@@ -150,11 +192,43 @@
 
       return cbId;
     },
-    onVisible: function(){
+    onVisible: function(callback){
+      var cbId, visibleCb;
 
+      if(!self.isSupport()){
+        return false;
+      }
+
+      if(!_self._getHidden()){
+        (typeof callback === 'function') && (callback());
+      }
+
+      cbId = self.onChange(function(state){
+        if(!_self._getHidden()){
+          (typeof callback === 'function') && (callback());
+        }
+      });
+
+      return cbId;
     },
-    onHidden: function(){
+    onHidden: function(callback){
+      var cbId, hiddenCb;
 
+      if(!self.isSupport()){
+        return false;
+      }
+
+      if(_self._getHidden()){
+        (typeof callback === 'function') && (callback());
+      }
+
+      cbId = self.onChange(function(state){
+        if(_self._getHidden()){
+          (typeof callback === 'function') && (callback());
+        }
+      });
+
+      return cbId;
     },
     onChange: function(callback){
       var cbId;
@@ -167,7 +241,25 @@
 
       return cbId;
     },
-    afterPrerender: function(){
+    afterPrerender: function(callback){
+      var _prerender = 'prerender',
+          cbId;
+
+      if(!self.isSupport()) return false;
+
+      if(_self._getState() !== _prerender){
+        (typeof callback === 'function') && (callback());
+        return true;
+      }
+
+      cbId = self.onChange(function(state){
+        if(state !== _prerender){
+          self.unbind(cbId);
+          (typeof callback === 'function') && (callback());
+        }
+      });
+
+      return cbId;
 
     },
     unbind: function(id){
@@ -175,7 +267,7 @@
     }
   };
 
-  if(typeof 'module' !== 'undefined' && module.exports){
+  if(typeof(module) !== 'undefined' && module.exports){
     module.exports = self;
   }else{
     global.Visibility = self;

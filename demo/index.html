@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title>Visibility Demo</title>
+    <script type="text/javascript" src="../src/visibility.js"></script>
+</head>
+<body>
+
+<script type="text/javascript">
+    var _visibleId, _hiddenId, _onceVisibleId, _afterPrerenderId, _onChangeId;
+
+    // isSupport
+    console.log(Visibility.isSupport());
+
+    // onceVisible
+    _onceVisibleId = Visibility.onceVisible(function(){
+        console.log('once visible trigger');
+        console.log(Visibility.state());
+    });
+
+    // afterprerender
+    _afterPrerenderId = Visibility.afterPrerender(function(){
+        console.log('after prerender trigger');
+        console.log(Visibility.state());
+    });
+
+    // onVisible
+    _visibleId = Visibility.onVisible(function(){
+        console.log('on visible trigger');
+        console.log(Visibility.state());
+    });
+
+    // onHidden
+    _hiddenId = Visibility.onHidden(function(){
+        console.log('on hidden trigger');
+        console.log(Visibility.state());
+    });
+
+    // onChange
+    _onChangeId = Visibility.onChange(function(){
+        console.log('on change trigger');
+        console.log(Visibility.state());
+    });
+
+</script>
+</body>
+</html>
