@@ -32,9 +32,12 @@
 
     fireEvent = function(){
       if(_doc.createEvent){
-
+        if(!stateChangeEvent){
+          stateChangeEvent = _doc.createEvent('HTMLEvents');
+          stateChangeEvent.initEvent(_self._propEvent, true, true);
+        }
       }else{
-
+        _self._executeChange();
       }
     };
 
