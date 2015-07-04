@@ -9,6 +9,7 @@
  * onStateChange();     -- when page visible state is changed, trigger
  * afterPrerender();    -- trigger at any state except 'prerender'
  *
+ *
  * Public Attributes Support:
  * state
  */
@@ -269,6 +270,8 @@
       return delete _self._callbacks[id];
     }
   };
+
+  fallback();
 
   if(typeof(module) !== 'undefined' && module.exports){
     module.exports = self;
