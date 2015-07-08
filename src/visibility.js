@@ -18,53 +18,6 @@
 
   'use strict';
 
-  var fallback = function(){
-    var onFocus, onBlur, fireEvent, stateChangeEvent;
-    var _doc        = document,
-        _hiddenProp = _self._getPropName(_self._propHidden),
-        _stateProp  = _self._getPropName(_self._propState);
-
-    if(self.isSupport()){
-      return false;
-    }
-
-    _doc[_hiddenProp] = false;
-    _doc[_stateProp]  = 'visible';
-
-    fireEvent = function(){
-      if(_doc.createEvent){
-        if(!stateChangeEvent){
-          stateChangeEvent = _doc.createEvent('HTMLEvents');
-          stateChangeEvent.initEvent(_self._propEvent, true, true);
-        }
-      }else{
-        _self._executeChange();
-      }
-    };
-
-    onFocus = function(){
-      _doc[_hiddenProp] = false;
-      _doc[_stateProp]  = 'visible';
-      fireEvent();
-    };
-
-    onBlur = function(){
-      _doc[_hiddenProp] = true;
-      _doc[_stateProp]  = 'hidden';
-      fireEvent();
-    };
-
-    if(_doc.addEventListener){
-      _doc.addEventListener('focus', onFocus, true);
-      _doc.addEventListener('blur', onBlur, true);
-    }else{
-      _doc.attachEvent('onfocusin', onFocus);
-      _doc.attachEvent('onfocusout', onBlur);
-    }
-
-
-  };
-
   var _self = {
     _id: 0,
     _doc: document || {},
@@ -142,7 +95,7 @@
     _listen: function(){
       var listenFunc;
 
-      if(self.init){
+      if(_self.init){
         return;
       }
 
@@ -156,7 +109,7 @@
         _self._doc.attachEvent(_self._propEvent, listenFunc);
       }
 
-      self.init = true;
+      self._init = true;
     },
 
     _executeChange: function(event){
@@ -197,7 +150,7 @@
       return cbId;
     },
     onVisible: function(callback){
-      var cbId, visibleCb;
+      var cbId;
 
       if(!self.isSupport()){
         return false;
@@ -216,7 +169,7 @@
       return cbId;
     },
     onHidden: function(callback){
-      var cbId, hiddenCb;
+      var cbId;
 
       if(!self.isSupport()){
         return false;
@@ -271,7 +224,52 @@
     }
   };
 
-  fallback();
+  var fallback = {
+    _doc: document,
+    _hiddenProp: _self._getPropName(_self._propHidden),
+    _stateProp: _self._getPropName(_self._propState),
+    stateChangeEvent: undefined,
+    init: function(){
+      if(self.isSupport()){
+        return false;
+      }
+
+      fallback._doc[fallback._hiddenProp] = false;
+      fallback._doc[fallback._stateProp]  = 'visible';
+
+      if(fallback._doc.addEventListener){
+        fallback._doc.addEventListener('focus', fallback.onFocus, true);
+        fallback._doc.addEventListener('blur', fallback.onBlur, true);
+      }else{
+        fallback._doc.attachEvent('onfocusin', fallback.onFocus);
+        fallback._doc.attachEvent('onfocusout', fallback.onBlur);
+      }
+    },
+    onFocus: function(){
+      fallback._doc[fallback._hiddenProp] = false;
+      fallback._doc[fallback._stateProp]  = 'visible';
+      fallback.fireEvent();
+    },
+    onBlur: function(){
+      fallback._doc[fallback._hiddenProp] = true;
+      fallback._doc[fallback._stateProp]  = 'hidden';
+      fallback.fireEvent();
+    },
+    fireEvent: function(){
+      if(fallback._doc.createEvent){
+        if(!fallback.stateChangeEvent){
+          fallback.stateChangeEvent = fallback._doc.createEvent('HTMLEvents');
+          fallback.stateChangeEvent.initEvent(_self._propEvent, true, true);
+        }
+        fallback._doc.detachEvent(fallback.stateChangeEvent);
+      }else{
+        _self._executeChange();
+      }
+    }
+
+  };
+
+  fallback.init();
 
   if(typeof(module) !== 'undefined' && module.exports){
     module.exports = self;

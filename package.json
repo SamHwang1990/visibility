@@ -3,9 +3,32 @@
   "version": "0.0.1",
   "description": "Wrapper for cross-browser Page Visibility API shim",
   "main": "index.js",
-  "scripts": {
-  },
-  "keywords": ["page visibility api", "polyfill", "visibility"],
+  "scripts": {},
+  "keywords": [
+    "page visibility api",
+    "polyfill",
+    "visibility"
+  ],
   "author": "SamHwang1990 <samhwang1990@gmail.com>",
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "chai": "3.0.0",
+    "grunt": "0.4.5",
+    "grunt-karma": "0.11.2",
+    "istanbul": "0.3.17",
+    "karma": "0.12.37",
+    "karma-chrome-launcher": "0.2.0",
+    "karma-coverage": "0.4.2",
+    "karma-html2js-preprocessor": "0.1.0",
+    "karma-mocha": "0.2.0",
+    "karma-phantomjs-launcher": "0.2.0",
+    "load-grunt-tasks": "^3.2.0",
+    "mocha": "2.2.5",
+    "phantomjs": "1.9.17",
+    "sinon": "1.15.4",
+    "sinon-chai": "2.8.0"
+  },
+  "scripts": {
+    "test": "mocha"
+  }
 }
