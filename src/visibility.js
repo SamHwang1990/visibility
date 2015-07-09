@@ -14,7 +14,7 @@
  * state
  */
 
-+function(global){
+;(function(global){
 
   'use strict';
 
@@ -277,4 +277,4 @@
     global.Visibility = self;
   }
 
-}(this);
+})(this);
