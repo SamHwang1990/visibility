@@ -18,8 +18,111 @@
 
   'use strict';
 
-  var _self = {
-    _id: 0,
+  var self = {
+    state: function () {
+      return self._getState() || 'visible';
+    },
+    isSupport: function(){
+      return !! self._getState();
+    },
+    onceVisible: function(callback){
+      var cbId;
+
+      if(!self.isSupport()){
+        return false;
+      }
+
+      // 如果当前
+      if(!self._getHidden()){
+        (typeof callback === 'function') && (callback());
+        return true;
+      }
+
+      cbId = self.onChange(function(state){
+        if(!self._getHidden()){
+          self.unbind(cbId);
+          (typeof callback === 'function') && (callback());
+        }
+      });
+
+      return cbId;
+    },
+    onVisible: function(callback){
+      var cbId;
+
+      if(!self.isSupport()){
+        return false;
+      }
+
+      if(!self._getHidden()){
+        (typeof callback === 'function') && (callback());
+      }
+
+      cbId = self.onChange(function(state){
+        if(!self._getHidden()){
+          (typeof callback === 'function') && (callback());
+        }
+      });
+
+      return cbId;
+    },
+    onHidden: function(callback){
+      var cbId;
+
+      if(!self.isSupport()){
+        return false;
+      }
+
+      if(self._getHidden()){
+        (typeof callback === 'function') && (callback());
+      }
+
+      cbId = self.onChange(function(state){
+        if(self._getHidden()){
+          (typeof callback === 'function') && (callback());
+        }
+      });
+
+      return cbId;
+    },
+    onChange: function(callback){
+      var cbId;
+
+      if(!self.isSupport()) return false;
+
+      cbId = self._id++;
+      self._callbacks[cbId] = callback;
+      self._listen();
+
+      return cbId;
+    },
+    afterPrerender: function(callback){
+      var _prerender = 'prerender',
+          cbId;
+
+      if(!self.isSupport()) return false;
+
+      if(self._getState() !== _prerender){
+        (typeof callback === 'function') && (callback());
+        return true;
+      }
+
+      cbId = self.onChange(function(state){
+        if(state !== _prerender){
+          self.unbind(cbId);
+          (typeof callback === 'function') && (callback());
+        }
+      });
+
+      return cbId;
+
+    },
+    unbind: function(id){
+      return delete self._callbacks[id];
+    },
+
+    // 私有变量、方法
+    _id: 0,                     // 回调ID
     _doc: document || {},
     _callbacks: {},
 
@@ -28,38 +131,38 @@
 
     _propHidden: 'Hidden',
     _getHidden: function(){
-      return _self._getPropValue(_self._propHidden);
+      return self._getPropValue(self._propHidden);
     },
 
     _propState: 'VisibilityState',
     _getState: function(){
-      return _self._getPropValue(_self._propState);
+      return self._getPropValue(self._propState);
     },
 
     _propEvent: 'visibilitychange',
 
     _getPrefix: function(){
       var prefixItem,
-        i = 0;
+          i = 0;
 
       /*
-      * 若前缀尚未知道，则遍历_prefixes 数组，看document 中是否存在hidden 属性
-      * 1. 如果存在，则设置前缀，并跳过整个遍历；
-      * 2. 如果不存在，则设置前为空字符串；
-      *
-      * 最后，返回前缀
-      * */
-      if(_self._prefixCached == null){
-        for(; prefixItem = _self._prefixes[i++];){
-          if((prefixItem + _self._propHidden) in _self._doc){
-            _self._prefixCached = prefixItem;
+       * 若前缀尚未知道，则遍历_prefixes 数组，看document 中是否存在hidden 属性
+       * 1. 如果存在，则设置前缀，并跳过整个遍历；
+       * 2. 如果不存在，则设置前为空字符串；
+       *
+       * 最后，返回前缀
+       * */
+      if(self._prefixCached == null){
+        for(; prefixItem = self._prefixes[i++];){
+          if((prefixItem + self._propHidden) in self._doc){
+            self._prefixCached = prefixItem;
             break;
           }else{
-            _self._prefixCached = '';
+            self._prefixCached = '';
           }
         }
       }
-      return _self._prefixCached;
+      return self._prefixCached;
     },
 
     _getPropName: function(name){
@@ -68,7 +171,7 @@
       if(!name)
         return '';
 
-      _prefix = _self._getPrefix();
+      _prefix = self._getPrefix();
 
       if(_prefix === ''){
         _propWithPrefix = name.substring(0, 1).toLowerCase() + name.substring(1);
@@ -86,8 +189,8 @@
         return '';
       }
 
-      _propWithPrefix = _self._getPropName(name);
-      _propValue = _self._doc[_propWithPrefix];
+      _propWithPrefix = self._getPropName(name);
+      _propValue = self._doc[_propWithPrefix];
 
       return _propValue;
     },
@@ -95,18 +198,18 @@
     _listen: function(){
       var listenFunc;
 
-      if(_self.init){
+      if(self.init){
         return;
       }
 
       listenFunc  = function(){
-        _self._executeChange.apply(_self, arguments);
+        self._executeChange.apply(self, arguments);
       };
 
-      if(_self._doc.addEventListener){
-        _self._doc.addEventListener(_self._propEvent, listenFunc);
+      if(self._doc.addEventListener){
+        self._doc.addEventListener(self._propEvent, listenFunc);
       }else{
-        _self._doc.attachEvent(_self._propEvent, listenFunc);
+        self._doc.attachEvent(self._propEvent, listenFunc);
       }
 
       self._init = true;
@@ -115,119 +218,20 @@
     _executeChange: function(event){
       var state = self.state();
 
-      for(var id in _self._callbacks){
-        (typeof _self._callbacks[id] === 'function') && _self._callbacks[id].call(_self._doc, state, event);
+      console.log('execute call');
+      console.log(self._callbacks);
+
+      for(var id in self._callbacks){
+        (typeof self._callbacks[id] === 'function') && self._callbacks[id].call(self._doc, state, event);
       }
     }
-  };
 
-  var self = {
-    state: function () {
-      return _self._getState() || 'visible';
-    },
-    isSupport: function(){
-      return !! _self._getState();
-    },
-    onceVisible: function(callback){
-      var cbId;
-
-      if(!self.isSupport()){
-        return false;
-      }
-
-      if(!_self._getHidden()){
-        (typeof callback === 'function') && (callback());
-        return true;
-      }
-
-      cbId = self.onChange(function(state){
-        if(!_self._getHidden()){
-          self.unbind(cbId);
-          (typeof callback === 'function') && (callback());
-        }
-      });
-
-      return cbId;
-    },
-    onVisible: function(callback){
-      var cbId;
-
-      if(!self.isSupport()){
-        return false;
-      }
-
-      if(!_self._getHidden()){
-        (typeof callback === 'function') && (callback());
-      }
-
-      cbId = self.onChange(function(state){
-        if(!_self._getHidden()){
-          (typeof callback === 'function') && (callback());
-        }
-      });
-
-      return cbId;
-    },
-    onHidden: function(callback){
-      var cbId;
-
-      if(!self.isSupport()){
-        return false;
-      }
-
-      if(_self._getHidden()){
-        (typeof callback === 'function') && (callback());
-      }
-
-      cbId = self.onChange(function(state){
-        if(_self._getHidden()){
-          (typeof callback === 'function') && (callback());
-        }
-      });
-
-      return cbId;
-    },
-    onChange: function(callback){
-      var cbId;
-
-      if(!self.isSupport()) return false;
-
-      cbId = _self._id++;
-      _self._callbacks[cbId] = callback;
-      _self._listen();
-
-      return cbId;
-    },
-    afterPrerender: function(callback){
-      var _prerender = 'prerender',
-          cbId;
-
-      if(!self.isSupport()) return false;
-
-      if(_self._getState() !== _prerender){
-        (typeof callback === 'function') && (callback());
-        return true;
-      }
-
-      cbId = self.onChange(function(state){
-        if(state !== _prerender){
-          self.unbind(cbId);
-          (typeof callback === 'function') && (callback());
-        }
-      });
-
-      return cbId;
-
-    },
-    unbind: function(id){
-      return delete _self._callbacks[id];
-    }
   };
 
   var fallback = {
     _doc: document,
-    _hiddenProp: _self._getPropName(_self._propHidden),
-    _stateProp: _self._getPropName(_self._propState),
+    _hiddenProp: self._getPropName(self._propHidden),
+    _stateProp: self._getPropName(self._propState),
     stateChangeEvent: undefined,
     init: function(){
       if(self.isSupport()){
@@ -259,11 +263,11 @@
       if(fallback._doc.createEvent){
         if(!fallback.stateChangeEvent){
           fallback.stateChangeEvent = fallback._doc.createEvent('HTMLEvents');
-          fallback.stateChangeEvent.initEvent(_self._propEvent, true, true);
+          fallback.stateChangeEvent.initEvent(self._propEvent, true, true);
         }
         fallback._doc.detachEvent(fallback.stateChangeEvent);
       }else{
-        _self._executeChange();
+        self._executeChange();
       }
     }
 
