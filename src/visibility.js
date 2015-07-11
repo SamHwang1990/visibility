@@ -198,7 +198,7 @@
     _listen: function(){
       var listenFunc;
 
-      if(self.init){
+      if(self._init){
         return;
       }
 
@@ -217,9 +217,6 @@
 
     _executeChange: function(event){
       var state = self.state();
-
-      console.log('execute call');
-      console.log(self._callbacks);
 
       for(var id in self._callbacks){
         (typeof self._callbacks[id] === 'function') && self._callbacks[id].call(self._doc, state, event);
