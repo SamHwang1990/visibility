@@ -23,6 +23,7 @@ describe('Visibility', function(){
     Visibility._doc = document = {
       addEventListener: function(){}
     }
+    Visibility._prefixCached = null;
     Visibility.name = 'samhwang';
   })
 
@@ -80,17 +81,58 @@ describe('Visibility', function(){
 
     describe('._getPropName', function(){
 
-      it('._getPrefix should be call', function(){
-
+      it('if name param is undefined, return empty', function(){
+        expect(Visibility._getPropName()).to.equal('');
       })
 
-      it('if _prefixCached is empty, first letter will be lowercase', function(){
-
+      it('if name param is blank, return empty', function(){
+        expect(Visibility._getPropName('')).to.equal('');
       })
 
-      it('if _prefixCached is not empty, will prepend prefix to itself with first letter uppercased', function(){
-        
+
+      it('._getPrefix should be call once', function(){
+        var spy = sinon.spy(Visibility, '_getPrefix');
+        var propHideen = Visibility._getPropName('hidden');
+        expect(spy).to.have.been.calledOnce;
       })
+
+      it.skip('if _getPrefix return empty, first letter will be lowercase', function(){
+        var stub = sinon.stub(Visibility, '_getPrefix');
+        stub.returns('');
+        expect(Visibility._getPropName('SamHwang')).to.be.equal('samHwang');
+        expect(Visibility._getPropName('samHwang')).to.be.equal('samHwang');
+      })
+
+      it.skip('if _prefixCached return not empty, will prepend prefix to itself with first letter uppercased', function(){
+        var stub = sinon.stub(Visibility, '_getPrefix');
+        stub.returns('prefix');
+        expect(Visibility._getPropName('SamHwang')).to.be.equal('prefixSamHwang');
+        expect(Visibility._getPropName('samHwang')).to.be.equal('prefixSamHwang');
+      })
+
+      it('in webkit core, prepend webkit to itself with first letter uppercased', function(){
+        webkitSet('hidden');
+        expect(Visibility._getPropName('state')).to.be.equal('webkitState');
+      })
+
+      it('in common core, first letter of name will be lowercase', function(){
+        set('visible');
+        expect(Visibility._getPropName('State')).to.be.equal('state');
+      })
+
+    })
+
+    describe('._getPropValue', function(){
+
+      it('if name param is undefined, return empty', function(){
+        expect(Visibility._getPropValue()).to.equal('');
+      })
+
+      it('if name param is empty, return empty', function(){
+        expect(Visibility._getPropValue('')).to.equal('');
+      })
+
+
 
     })
 

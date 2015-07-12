@@ -127,7 +127,7 @@
     _callbacks: {},
 
     _prefixes: ['webkit', 'ms', 'o', 'moz', 'khtml'],
-    _prefixCached: undefined,
+    _prefixCached: null,
 
     _propHidden: 'Hidden',
     _getHidden: function(){
