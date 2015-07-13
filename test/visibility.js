@@ -16,6 +16,10 @@ describe('Visibility', function(){
     document.visibilityState = state;
   }
 
+  var unset = function(){
+    document = null;
+  }
+
   beforeEach(function(){
     Visibility._init = false;
     Visibility._callbacks = {};
@@ -31,6 +35,9 @@ describe('Visibility', function(){
     for(var method in Visibility){
       Visibility[method] && Visibility[method].restore && Visibility[method].restore();
     }
+
+    unset();
+
   })
 
   it('Hala Mocha', function(){
@@ -132,7 +139,82 @@ describe('Visibility', function(){
         expect(Visibility._getPropValue('')).to.equal('');
       })
 
+      it('.getPropName should be call once', function(){
+        var spy = sinon.spy(Visibility, '_getPropName');
+        var propValue = Visibility._getPropValue('hidden');
+        expect(spy).to.have.been.calledOnce;
+      })
 
+      it('if name param is not a property of doc, return undefined', function(){
+        set('visible');
+        expect(Visibility._getPropValue('notexist')).to.be.undefined;
+        // expect(Visibility._getPropValue('notexist')).to.be.an('undefined');
+      })
+
+      it('set document to hidden, get the correct value', function(){
+        webkitSet('hidden');
+        expect(Visibility._getPropValue('hidden')).to.be.true;
+        expect(Visibility._getPropValue('visibilityState')).to.be.equal('hidden');
+      })
+
+      it('set document to visible, get the correct value', function(){
+        set('visible');
+        expect(Visibility._getPropValue('hidden')).to.be.false;
+        expect(Visibility._getPropValue('visibilityState')).to.be.equal('visible');
+      })
+
+    })
+
+    describe('._listen', function(){
+
+      it('if _init is true, addEventListener should not be called', function(){
+        var spy = sinon.spy(document, 'addEventListener');
+        Visibility._init = true;
+        Visibility._listen();
+        expect(spy).to.not.have.been.called;
+      })
+
+      it('sets listener only once, and _init is set to true', function(){
+        var spy = sinon.spy(document, 'addEventListener');
+
+        Visibility._listen();
+        Visibility._listen();
+
+        expect(spy).to.have.been.calledOnce;
+        expect(Visibility._init).to.be.true;
+
+      })
+
+      it('sets listener', function(){
+        var _listener = null,
+            spy;
+
+        document.addEventListener = function(a, b, c){
+          _listener = b;
+        }
+
+        spy = sinon.spy(Visibility, '_executeChange');
+        Visibility._listen();
+        _listener();
+
+        expect(spy).to.have.been.called;
+        expect(spy).to.have.been.calledOn(Visibility);
+
+      })
+
+      it('sets listener on IE', function(){
+        var spy;
+
+        Visibility._doc = document = {
+          attachEvent: function(){}
+        }
+
+        spy = sinon.spy(document, 'attachEvent');
+        Visibility._listen();
+
+        expect(spy).to.have.been.called;
+
+      })
 
     })
 
