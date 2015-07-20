@@ -215,6 +215,62 @@ describe('Visibility', function(){
         expect(spy).to.have.been.called;
 
       })
+    })
+
+    describe('.state', function(){
+
+      it('._getState() shall be called', function(){
+        var spy = sinon.spy(Visibility, '_getState');
+        Visibility.state();
+        expect(spy).to.have.been.called;
+      })
+
+      it('if state is undefined in document, return default value: visible', function(){
+        Visibility._doc = document = {};
+        expect(Visibility.state()).to.equal('visible');
+      })
+
+      it('return the state of document', function(){
+        webkitSet('hidden');
+        expect(Visibility.state()).to.equal('hidden');
+        expect(Visibility.state()).to.not.equal('visible');
+      })
+
+    })
+
+    describe('.isSupport', function(){
+
+      it('._getState() shall be called', function(){
+        var spy = sinon.spy(Visibility, '_getState');
+        Visibility.isSupport();
+        expect(spy).to.have.been.called;
+      })
+
+      it('if state is undefined in document, return false', function(){
+        Visibility._doc = document = {};
+        expect(Visibility.isSupport()).to.be.false;
+      })
+
+      it('if state is defined in document, return true', function(){
+        webkitSet('visible');
+        expect(Visibility.isSupport()).to.be.true;
+      })
+
+    })
+
+    describe('.onceVisible', function(){
+
+      it('if not support, return false, without callback called', function(){
+
+      })
+
+      it('if current state is visible, callback will be called at once', function(){
+
+      })
+
+      it('when state change to visible, .unbind and callback will be called', function(){
+
+      })
 
     })
 
