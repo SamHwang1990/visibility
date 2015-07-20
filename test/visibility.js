@@ -261,7 +261,14 @@ describe('Visibility', function(){
     describe('.onceVisible', function(){
 
       it('if not support, return false, without callback called', function(){
+        var stub = sinon.stub(Visibility, 'isSupport');
+        var spy = sinon.spy();
+        var onChangeSpy = sinon.spy(Visibility, 'onChange');
+        stub.returns(false);
 
+        expect(Visibility.onceVisible(spy)).to.be.false;
+        expect(spy).to.have.not.been.called;
+        expect(onChangeSpy).to.have.not.been.called;
       })
 
       it('if current state is visible, callback will be called at once', function(){
