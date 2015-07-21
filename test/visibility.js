@@ -267,11 +267,20 @@ describe('Visibility', function(){
         stub.returns(false);
 
         expect(Visibility.onceVisible(spy)).to.be.false;
+        expect(stub).to.have.been.called;
         expect(spy).to.have.not.been.called;
         expect(onChangeSpy).to.have.not.been.called;
       })
 
       it('if current state is visible, callback will be called at once', function(){
+        webkitSet('visible');
+
+        var cbSpy = sinon.spy(),
+            onChangeSpy = sinon.spy(Visibility, 'onChange');
+
+        expect(Visibility.onceVisible(cbSpy)).to.be.true;
+        expect(cbSpy).to.have.been.calledOnce;
+        expect(onChangeSpy).to.have.not.been.called;
 
       })
 
