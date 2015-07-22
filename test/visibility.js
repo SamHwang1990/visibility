@@ -272,7 +272,7 @@ describe('Visibility', function(){
         expect(onChangeSpy).to.have.not.been.called;
       })
 
-      it('if current state is visible, callback will be called at once', function(){
+      it('if current state is visible, callback will be called at once and the function will return true', function(){
         webkitSet('visible');
 
         var cbSpy = sinon.spy(),
@@ -285,6 +285,63 @@ describe('Visibility', function(){
       })
 
       it('when state change to visible, .unbind and callback will be called', function(){
+        webkitSet('hidden');
+
+        var cbSpy = sinon.spy(),
+            cbId;
+
+        cbId = Visibility.onceVisible(cbSpy);
+
+        expect(cbId).to.be.a('number');
+
+        Visibility._executeChange();
+        expect(cbSpy).to.have.not.been.called;
+
+        webkitSet('visible');
+        Visibility._executeChange();
+        expect(cbSpy).to.have.been.calledOnce;
+        expect(Visibility._callbacks[cbId]).to.be.undefined;
+
+        Visibility._executeChange();
+        expect(cbSpy).to.have.been.calledOnce;
+
+      })
+
+    })
+
+    describe('.onVisible', function(){
+
+      it('if not support, return false without callback or onChange called', function(){
+        var stub = sinon.stub(Visibility, 'isSupport'),
+            cbSpy = sinon.spy(),
+            onChangeSpy = sinon.spy(Visibility, 'onChange');
+
+        stub.returns(false);
+
+        expect(Visibility.onVisible(cbSpy)).to.be.false;
+        expect(cbSpy).to.have.not.been.called;
+        expect(onChangeSpy).to.have.not.been.called;
+
+      })
+
+      it('if current is visible, callback will be called at once, and then onChange will be called', function(){
+        webkitSet('visible');
+
+        var cbSpy = sinon.spy(),
+            onChangeSpy = sinon.spy(Visibility, 'onChange'),
+            cbId;
+
+        cbId = Visibility.onVisible(cbSpy);
+
+        expect(cbSpy).to.have.been.calledOnce;
+        expect(onChangeSpy).to.have.been.called;
+        expect(cbId).to.been.a('number');
+        expect(Visibility._callbacks[cbId]).to.not.be.undefined;
+
+
+      })
+
+      it('when state change to visible, callback will be called', function(){
 
       })
 
