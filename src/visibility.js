@@ -90,32 +90,11 @@
 
       if(!self.isSupport()) return false;
 
-      cbId = self._id++;
+      cbId = ++self._id;
       self._callbacks[cbId] = callback;
       self._listen();
 
       return cbId;
-    },
-    afterPrerender: function(callback){
-      var _prerender = 'prerender',
-          cbId;
-
-      if(!self.isSupport()) return false;
-
-      if(self._getState() !== _prerender){
-        (typeof callback === 'function') && (callback());
-        return true;
-      }
-
-      cbId = self.onChange(function(state){
-        if(state !== _prerender){
-          self.unbind(cbId);
-          (typeof callback === 'function') && (callback());
-        }
-      });
-
-      return cbId;
-
     },
     unbind: function(id){
       return delete self._callbacks[id];

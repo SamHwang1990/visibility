@@ -342,9 +342,140 @@ describe('Visibility', function(){
       })
 
       it('when state change to visible, callback will be called', function(){
+        webkitSet('hidden');
+
+        var cbSpy = sinon.spy(),
+            listenSpy = sinon.spy(Visibility, '_listen'),
+            cbId;
+
+        cbId = Visibility.onVisible(cbSpy);
+
+        expect(listenSpy).to.have.been.called;
+        expect(cbSpy).to.have.not.been.called;
+
+        webkitSet('visible');
+        Visibility._executeChange();
+        expect(cbSpy).to.have.been.called;
 
       })
 
+    })
+
+    describe('.onHidden', function(){
+
+      it('if not support, return false without callback or onChange called', function(){
+        var stub = sinon.stub(Visibility, 'isSupport'),
+            cbSpy = sinon.spy(),
+            onChangeSpy = sinon.spy(Visibility, 'onChange');
+
+        stub.returns(false);
+
+        expect(Visibility.onHidden(cbSpy)).to.be.false;
+        expect(cbSpy).to.have.not.been.called;
+        expect(onChangeSpy).to.have.not.been.called;
+      })
+
+      it('if current is hidden, callback will be called at once, and then onChange will be called', function(){
+        webkitSet('hidden');
+
+        var cbSpy = sinon.spy(),
+            onChangeSpy = sinon.spy(Visibility, 'onChange'),
+            cbId;
+
+        cbId = Visibility.onHidden(cbSpy);
+
+        expect(cbSpy).to.have.been.calledOnce;
+        expect(onChangeSpy).to.have.been.called;
+        expect(cbId).to.been.a('number');
+        expect(Visibility._callbacks[cbId]).to.not.be.undefined;
+
+      })
+
+      it('when state change to hidden, callback will be called', function(){
+        webkitSet('visible');
+
+        var cbSpy = sinon.spy(),
+            listenSpy = sinon.spy(Visibility, '_listen'),
+            cbId;
+
+        cbId = Visibility.onHidden(cbSpy);
+
+        expect(listenSpy).to.have.been.called;
+        expect(cbSpy).to.have.not.been.called;
+
+        webkitSet('hidden');
+        Visibility._executeChange();
+        expect(cbSpy).to.have.been.called;
+
+      })
+
+    });
+
+    describe('.onChange', function(){
+
+      it('when not support, return false', function(){
+        var stub = sinon.stub(Visibility, 'isSupport'),
+            cbSpy = sinon.spy();
+
+        Visibility._id = 3;
+        stub.returns(false);
+
+        expect(Visibility.onChange(cbSpy)).to.be.false;
+      })
+
+      it('callback id plus one, _listen() will be called, and _callback object contain the cbId key which value is callback', function(){
+        var supportStub = sinon.stub(Visibility, 'isSupport'),
+            listenSpy = sinon.spy(Visibility, '_listen'),
+            cbSpy = sinon.spy(),
+            cbId;
+
+        Visibility._id = 3;
+
+        supportStub.returns(true);
+
+        cbId = Visibility.onChange(cbSpy);
+
+        expect(listenSpy).to.have.been.calledOnce;
+        expect(cbId).to.equal(4);
+        expect(Visibility._callbacks[cbId]).to.equal(cbSpy);
+      })
+
+      it('callback will be called when state change', function(){
+        var supportStub = sinon.stub(Visibility, 'isSupport'),
+            cbSpy = sinon.spy(),
+            cbId;
+
+        supportStub.returns(true);
+
+        cbId = Visibility.onChange(cbSpy);
+
+        expect(cbSpy).to.have.not.been.called;
+
+        Visibility._executeChange();
+
+        expect(cbSpy).to.have.been.calledOnce;
+
+        Visibility._executeChange();
+
+        expect(cbSpy).to.have.been.calledTwice;
+
+      })
+
+    });
+
+    describe('.unbind', function(){
+      it('delete cbId from _callback', function(){
+        var supportStub = sinon.stub(Visibility, 'isSupport'),
+            cbSpy = sinon.spy(),
+            cbId;
+
+        supportStub.returns(true);
+
+        cbId = Visibility.onChange(cbSpy);
+        expect(Visibility._callbacks[cbId]).to.equal(cbSpy);
+        Visibility.unbind(cbId);
+        expect(Visibility._callbacks[cbId]).to.be.undefined;
+      })
     })
 
     // core test end
